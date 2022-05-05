@@ -8,8 +8,9 @@ def computeMST(nd_points):
     mst_cords = mst.tocoo()
     mst_df = pd.DataFrame({'src':mst_cords.row, 'dst':mst_cords.col, 'dist':mst_cords.data})
     mst_df = mst_df.sort_values(by='dist').reset_index(drop = True)
-    mst_df.iloc[4,0] = 0
-    mst_df.iloc[4,1] = 3
+    for i in range(len(mst_df)):
+        if mst_df['src'][i] > mst_df['dst'][i]:
+            mst_df.iloc[0,i], mst_df[1,i] = mst_df[1,i], mst_df[0,i]
     return mst_df
 
 if __name__ == "__main__":

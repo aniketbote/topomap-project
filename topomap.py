@@ -46,12 +46,10 @@ def transform(p, t, yoff):
     return (xx, yy)
 
 def transform_component(c, t, yoff):
-    global verts
     for v in c.vertices:
         verts[v] = transform(verts[v], t, yoff)
 
 def mergeComponents(c1_o,c2_o,v1,v2,length):
-    global verts
     c1 = c1_o.vertices
     c2 = c2_o.vertices
     merged = set(list(c1)+list(c2))
@@ -68,6 +66,7 @@ def mergeComponents(c1_o,c2_o,v1,v2,length):
     return list(n_hull)
 
 def run_topomap(data_df):
+    global verts
     nd_points = np.array(data_df)
 
     nd = NaiveDisjoinSet(len(nd_points))
@@ -96,7 +95,7 @@ def run_topomap(data_df):
 
 
 if __name__ == "__main__":
-    data = pd.read_csv("data\3d-data-6points-seed-10.csv")
+    data = pd.read_csv("data/3d-data-6points-seed-10.csv")
     out = run_topomap(data)
     out.to_csv("output_topomap.csv", index = False)
             

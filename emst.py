@@ -10,7 +10,7 @@ def computeMST(nd_points):
     mst_df = mst_df.sort_values(by='dist').reset_index(drop = True)
     for i in range(len(mst_df)):
         if mst_df['src'][i] > mst_df['dst'][i]:
-            mst_df.iloc[0,i], mst_df[1,i] = mst_df[1,i], mst_df[0,i]
+            mst_df.iloc[i,0], mst_df.iloc[i,1] = mst_df.iloc[i,1], mst_df.iloc[i,0]
     return mst_df
 
 if __name__ == "__main__":

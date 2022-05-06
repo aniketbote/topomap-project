@@ -1,9 +1,17 @@
 import numpy as np
 from geoutils import find_angle
-from convhull.convhull import customComputeConvexHull
+try:
+    from convhull.convhull import customComputeConvexHull
+except:
+    print("Using Scipy Convex Hull")
+    from utils import customComputeConvexHull
 from utils import NaiveDisjoinSet
 from emst import computeMST
 import pandas as pd
+import time
+import seaborn as sns
+import matplotlib.pyplot as plt
+sns.set_style("darkgrid")
 
 def alignHull(hull, p1, top):
     v= -1
@@ -65,39 +73,74 @@ def mergeComponents(c1_o,c2_o,v1,v2,length):
         raise Exception("Same co-ordinates")
     return list(n_hull)
 
-def run_topomap(data_df):
-    global verts
-    nd_points = np.array(data_df)
+class TopoMap:
+    def __init__(self):
+        pass
 
-    nd = NaiveDisjoinSet(len(nd_points))
+    def compute_metrics(func):
+        def wrapper(self, *args, **kwargs):
+            start_time = time.time()
+            result = func(self, *args, **kwargs)
+            self.total_time = time.time() - start_time
+            return result
+        return wrapper
 
-    verts = {}
-    for i in range(len(nd_points)):
-        verts[i] = (0,0)
+    @compute_metrics
+    def transform(self, data_df):
+        global verts
+        nd_points = np.array(data_df)
 
-    mst_df = computeMST(nd_points)
-        
-    for i in range(len(mst_df)):
-        p1 = mst_df["src"][i]
-        p2 = mst_df["dst"][i]
+        nd = NaiveDisjoinSet(len(nd_points))
 
-        c1 = nd.Find(p1)
-        c2 = nd.Find(p2)
-        
-        if c1.vertices == c2.vertices :
-            raise Exception("Error")
-        hull = mergeComponents(c1,c2,p1,p2,mst_df["dist"][i])
-        nd.Union(p1, p2, hull)
-        
-    t_points = np.array([list(e) for e in verts.values()])
-    out_df = pd.DataFrame(t_points, columns=['x','y'])
-    return out_df
+        verts = {}
+        for i in range(len(nd_points)):
+            verts[i] = (0,0)
+
+        mst_df = computeMST(nd_points)
+            
+        for i in range(len(mst_df)):
+            p1 = mst_df["src"][i]
+            p2 = mst_df["dst"][i]
+
+            c1 = nd.Find(p1)
+            c2 = nd.Find(p2)
+            
+            if c1.vertices == c2.vertices :
+                raise Exception("Error")
+            hull = mergeComponents(c1,c2,p1,p2,mst_df["dist"][i])
+            nd.Union(p1, p2, hull)
+            
+        t_points = np.array([list(e) for e in verts.values()])
+        out_df = pd.DataFrame(t_points, columns=['x','y'])
+        self._tpoints = t_points
+        return out_df
+    
+    def plot(self, y = None, save_path = None):
+        sns.scatterplot(x = self._tpoints[:,0], y = self._tpoints[:,1], hue = y, style=y)
+        if save_path is not None:
+            plt.savefig(save_path, dpi = 300)
+        plt.show()
+
+
+
+    
 
 
 if __name__ == "__main__":
-    data = pd.read_csv("data/3d-data-6points-seed-10.csv")
-    out = run_topomap(data)
-    out.to_csv("output_topomap.csv", index = False)
+    from validate import validate_points
+    data = pd.read_csv("data\iris.csv")
+    x = data.iloc[:,:3]
+    y = data.iloc[:,-1]
+    T = TopoMap()
+    out = T.transform(x)
+    # print(out)
+    # print(T._tpoints)
+    print(T.total_time)
+    # T.plot(y, 'img.png')
+    x = np.array(x)
+    tx = T._tpoints
+    print(validate_points(x, tx))
+    # out.to_csv("output_topomap.csv", index = False)
             
     
 

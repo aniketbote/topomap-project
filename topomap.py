@@ -6,7 +6,7 @@ except:
     print("Using Scipy Convex Hull")
     from utils import customComputeConvexHull
 from utils import NaiveDisjoinSet
-from emst import computeMST
+from emst import computeMST, computeParallelMST
 import pandas as pd
 import time
 import seaborn as sns
@@ -74,8 +74,8 @@ def mergeComponents(c1_o,c2_o,v1,v2,length):
     return list(n_hull)
 
 class TopoMap:
-    def __init__(self):
-        pass
+    def __init__(self, use_parallel):
+        self.use_parallel = use_parallel
 
     def compute_metrics(func):
         def wrapper(self, *args, **kwargs):
@@ -87,6 +87,7 @@ class TopoMap:
 
     @compute_metrics
     def transform(self, data_df):
+        data_df = data_df.drop_duplicates(keep='first')
         global verts
         nd_points = np.array(data_df)
 
@@ -96,7 +97,10 @@ class TopoMap:
         for i in range(len(nd_points)):
             verts[i] = (0,0)
 
-        mst_df = computeMST(nd_points)
+        if self.use_parallel:
+            mst_df = computeParallelMST(nd_points)
+        else:
+            mst_df = computeMST(nd_points)
             
         for i in range(len(mst_df)):
             p1 = mst_df["src"][i]
@@ -127,19 +131,28 @@ class TopoMap:
 
 
 if __name__ == "__main__":
-    from validate import validate_points
-    data = pd.read_csv("data\iris.csv")
+    # from validate import validate_points
+    data = pd.read_csv("/content/topomap-project/data/iris.csv")
+    # Dup_Rows = data[data.duplicated()]
+    # print(Dup_Rows)
     x = data.iloc[:,:3]
     y = data.iloc[:,-1]
-    T = TopoMap()
-    out = T.transform(x)
+    T1 = TopoMap(use_parallel=False)
+    out = T1.transform(x)
     # print(out)
     # print(T._tpoints)
-    print(T.total_time)
+    print(T1.total_time)
     # T.plot(y, 'img.png')
-    x = np.array(x)
-    tx = T._tpoints
-    print(validate_points(x, tx))
+
+    T2 = TopoMap(use_parallel=True)
+    out = T2.transform(x)
+    # print(out)
+    # print(T._tpoints)
+    print(T2.total_time)
+
+    # x = np.array(x)
+    # tx = T1._tpoints
+    # print(validate_points(x, tx))
     # out.to_csv("output_topomap.csv", index = False)
             
     

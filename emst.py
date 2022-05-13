@@ -3,8 +3,8 @@ from scipy.sparse.csgraph import minimum_spanning_tree
 import pandas as pd
 from pypargeo.pypargeo import WghEuclideanMst
 
-def computeMST(nd_points):
-    distance_matrix = pairwise_distances(nd_points)
+def computeMST(nd_points,distance_type='euclidean'):
+    distance_matrix = pairwise_distances(nd_points,metric=distance_type)
     mst = minimum_spanning_tree(distance_matrix)
     mst_cords = mst.tocoo()
     mst_df = pd.DataFrame({'src':mst_cords.row, 'dst':mst_cords.col, 'dist':mst_cords.data})

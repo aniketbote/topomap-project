@@ -18,3 +18,12 @@ parallelizing can be done in W/p+D. This approach is based on
 generating well separated pairs using well separated pair decomposition and then computing the minimum spanning tree using Kruskal’s
 algorithm and bichromatic closest pairs.
 
+# System Requirements
+
+OS - Linux  
+Python - 3.8  
+
+# Usage
+
+`example.py` contains minimal example that uses the implementation
+

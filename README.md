@@ -1,4 +1,4 @@
-# parallelized Topomap
+# Parallelized Topomap
 
 Topomap introduces a novel way for projecting multidimensional
 data. There are many visual projection techniques designed map the
